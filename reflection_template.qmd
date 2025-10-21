@@ -23,6 +23,8 @@ execute:
 ```{r}
 #| label: wd-1-csv-1
 
+#Lab 2, Question 1
+surveys <- read_csv(here::here("Week 2", "Lab 2", "surveys.csv"))
 ```
 
 -   `csv` Example 2
@@ -30,6 +32,8 @@ execute:
 ```{r}
 #| label: wd-1-csv-2
 
+#Lab 3, Question 2
+evals <- read_csv(here::here("Week 3", "Lab 3", "teacher_evals.csv"))
 ```
 
 -   `xlsx`
@@ -46,6 +50,33 @@ execute:
 ```{r}
 #| label: wd-2-ex-1
 
+#Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
+
+teacher_evals_clean
 ```
 
 -   Example removing specified columns
@@ -68,6 +99,34 @@ execute:
 
 ```{r}
 #| label: wd-3-numeric-ex-1
+
+#Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
+
+teacher_evals_clean
 
 ```
 
