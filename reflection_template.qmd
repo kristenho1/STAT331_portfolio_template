@@ -76,7 +76,6 @@ teacher_evals_clean <- evals |>
          seniority,
          sex)
 
-teacher_evals_clean
 ```
 
 -   Example removing specified columns
@@ -126,7 +125,7 @@ teacher_evals_clean <- evals |>
          seniority,
          sex)
 
-teacher_evals_clean
+
 
 ```
 
@@ -590,6 +589,33 @@ The following assignments satisfy the above criteria:
 
 ```{r}
 #| label: dvs-4-across
+
+#Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
+
 
 ```
 
