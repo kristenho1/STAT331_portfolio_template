@@ -10,7 +10,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an \_\_.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [A]{.underline}.
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -142,12 +142,44 @@ teacher_evals_clean
 ```{r}
 #| label: wd-3-character
 
+#Lab 5, Woman who hired Jeremy Bowers section 
+facebook_event_checkin |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(car_make == "Tesla",
+         car_model == "Model S",
+         height %in% c(65, 66, 67),
+         hair_color == "red",
+         gender == "female",
+         str_detect(event_name, pattern = "SQL Symphony Concert")) |>
+  group_by(person_id) |>
+  summarize(event_count  = sum(str_detect(date, "^201712"))) |>
+  filter(event_count == 3) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  pull(person_id, name)
+
 ```
 
 -   Character Example 2 (example must use functions from **stringr**)
 
 ```{r}
 #| label: wd-3-string
+
+#Lab 5, Woman who hired Jeremy Bowers section 
+facebook_event_checkin |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(car_make == "Tesla",
+         car_model == "Model S",
+         height %in% c(65, 66, 67),
+         hair_color == "red",
+         gender == "female",
+         str_detect(event_name, pattern = "SQL Symphony Concert")) |>
+  group_by(person_id) |>
+  summarize(event_count  = sum(str_detect(date, "^201712"))) |>
+  filter(event_count == 3) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  pull(person_id, name)
 
 ```
 
@@ -186,6 +218,54 @@ teacher_evals_clean
 ```{r}
 #| label: wd-4-factor-ex-2
 
+#Lab 4, Question 7 
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(c("darkseagreen", 
+                                                 "cyan",
+                                                 "pink",
+                                                 "salmon", 
+                                                 "deepskyblue", 
+                                                 "purple",
+                                                 "orange", 
+                                                 "red", 
+                                                 "brown", 
+                                                 "yellow"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
+
 ```
 
 -   Character (example must use functions from **stringr**)
@@ -209,6 +289,22 @@ teacher_evals_clean
 ```{r}
 #| label: wd-5-left-ex-1
 
+#Lab 5, Woman who hired Jeremy Bowers section 
+facebook_event_checkin |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(car_make == "Tesla",
+         car_model == "Model S",
+         height %in% c(65, 66, 67),
+         hair_color == "red",
+         gender == "female",
+         str_detect(event_name, pattern = "SQL Symphony Concert")) |>
+  group_by(person_id) |>
+  summarize(event_count  = sum(str_detect(date, "^201712"))) |>
+  filter(event_count == 3) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  pull(person_id, name)
+
 ```
 
 -   `right_join()` Example 1
@@ -230,6 +326,11 @@ teacher_evals_clean
 ```{r}
 #| label: wd-5-inner-ex-1
 
+#Lab 4, Question 2
+ca_childcare <- 
+  filter(.data = counties, state_abbreviation == "CA") |>
+  inner_join(y = childcare_costs,
+            by = join_by(county_fips_code)) 
 ```
 
 -   `inner_join()` Example 2
@@ -262,6 +363,53 @@ teacher_evals_clean
 ```{r}
 #| label: wd-7-long
 
+#Lab 4, Question 7 
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(c("darkseagreen", 
+                                                 "cyan",
+                                                 "pink",
+                                                 "salmon", 
+                                                 "deepskyblue", 
+                                                 "purple",
+                                                 "orange", 
+                                                 "red", 
+                                                 "brown", 
+                                                 "yellow"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 -   `pivot_wider()`
@@ -269,6 +417,14 @@ teacher_evals_clean
 ```{r}
 #| label: wd-7-wide
 
+# Lab 4, Question 6
+ca_childcare |>
+  select(study_year, mc_infant, census_region) |>
+  filter(study_year == 2008 | study_year == 2018) |>
+  pivot_wider(names_from = study_year,
+              values_from = mc_infant,
+              values_fn = median) |>
+  slice_min(`2018`)
 ```
 
 ## Reproducibility
