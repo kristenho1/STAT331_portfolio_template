@@ -218,6 +218,7 @@ facebook_event_checkin |>
 #| label: wd-4-factor-ex-2
 
 #Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
 ca_childcare |>
   select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
   mutate(Infant = mc_infant,
@@ -241,16 +242,7 @@ ca_childcare |>
                      breaks = seq(2008,2018,2)) +
   scale_y_continuous(limits = c(0,500),
                      breaks = seq(0,500, 100)) +
-  scale_color_manual(values = colorRampPalette(c("darkseagreen", 
-                                                 "cyan",
-                                                 "pink",
-                                                 "salmon", 
-                                                 "deepskyblue", 
-                                                 "purple",
-                                                 "orange", 
-                                                 "red", 
-                                                 "brown", 
-                                                 "yellow"))(10)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
   geom_point() +
   geom_smooth(method = "loess",
               linewidth = 0.5,
