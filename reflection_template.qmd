@@ -134,6 +134,14 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: wd-3-numeric-ex-1
 
+# Challenge 3, Question 1
+teacher_evals_compare <- evals |>
+  filter(question_no == 903) |>
+  mutate(set_level = if_else(SET_score_avg >= 4, "excellent", "standard"),
+         sen_level = case_when(seniority <= 4 ~ "junior",
+                               seniority <= 8 ~ "senior",
+                               seniority > 8 ~ "very senior")) |>
+  select(course_id, set_level, sen_level)
 ```
 
 -   Character Example 1 (any context)
@@ -196,6 +204,31 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-4-numeric-ex-1
 
+#Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
 ```
 
 -   Numeric Example 2
@@ -203,12 +236,37 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-4-numeric-ex-2
 
+# Challenge 3, Question 1
+teacher_evals_compare <- evals |>
+  filter(question_no == 903) |>
+  mutate(set_level = if_else(SET_score_avg >= 4, "excellent", "standard"),
+         sen_level = case_when(seniority <= 4 ~ "junior",
+                               seniority <= 8 ~ "senior",
+                               seniority > 8 ~ "very senior")) |>
+  select(course_id, set_level, sen_level)
+
 ```
 
 -   Factor Example 1 (renaming levels)
 
 ```{r}
 #| label: wd-4-factor-ex-1
+
+# Lab 4, Question 4
+ca_childcare <- ca_childcare |> 
+  mutate(county_name = str_remove(county_name, " County"),
+         census_region = fct_collapse(.f = county_name,
+                                      "Superior County" = superior_counties,
+                                      "North Coast" = north_coast_counties,
+                                      "San Francisco Bay Area"  = san_fran_counties,
+                                      "Central Coast" = central_coast_counties,
+                                      "Southern San Joaquin Valley" = s_san_joaquin_counties,
+                                      "Northern San Joaquin Valley" = n_san_joaquin_counties,
+                                      "Inland Empire" = inland_counties,
+                                      "Los Angeles County" = la_county,
+                                      "Orange County" = orange_county,
+                                      "San Diego-Imperial" = san_diego_imperial_counties
+                                      ))
 
 ```
 
@@ -264,6 +322,21 @@ ca_childcare |>
 ```{r}
 #| label: wd-4-string
 
+# Lab 4, Question 4
+ca_childcare <- ca_childcare |> 
+  mutate(county_name = str_remove(county_name, " County"),
+         census_region = fct_collapse(.f = county_name,
+                                      "Superior County" = superior_counties,
+                                      "North Coast" = north_coast_counties,
+                                      "San Francisco Bay Area"  = san_fran_counties,
+                                      "Central Coast" = central_coast_counties,
+                                      "Southern San Joaquin Valley" = s_san_joaquin_counties,
+                                      "Northern San Joaquin Valley" = n_san_joaquin_counties,
+                                      "Inland Empire" = inland_counties,
+                                      "Los Angeles County" = la_county,
+                                      "Orange County" = orange_county,
+                                      "San Diego-Imperial" = san_diego_imperial_counties
+                                      ))
 ```
 
 -   Date (example must use functions from **lubridate**)
@@ -303,6 +376,11 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-5-right
 
+#Lab 4, Question 3
+ca_childcare <- 
+  right_join(x = ca_childcare,
+            y = tax_rev,
+            by = join_by(county_name == entity_name, study_year == year))
 ```
 
 -   `left_join()` **or** `right_join()` Example 2
@@ -310,6 +388,16 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-5-left-right-ex-2
 
+#Lab 5
+get_fit_now_check_in |>
+  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(str_detect(membership_id, "^48Z"),
+         membership_status == "gold",
+         str_detect(plate_number, "H42W*"),
+         check_in_date == "20180109") |>
+  pull(person_id, name.x)
 ```
 
 -   `inner_join()` Example 1
@@ -355,6 +443,7 @@ ca_childcare <-
 #| label: wd-7-long
 
 #Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
 ca_childcare |>
   select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
   mutate(Infant = mc_infant,
@@ -378,16 +467,7 @@ ca_childcare |>
                      breaks = seq(2008,2018,2)) +
   scale_y_continuous(limits = c(0,500),
                      breaks = seq(0,500, 100)) +
-  scale_color_manual(values = colorRampPalette(c("darkseagreen", 
-                                                 "cyan",
-                                                 "pink",
-                                                 "salmon", 
-                                                 "deepskyblue", 
-                                                 "purple",
-                                                 "orange", 
-                                                 "red", 
-                                                 "brown", 
-                                                 "yellow"))(10)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
   geom_point() +
   geom_smooth(method = "loess",
               linewidth = 0.5,
@@ -411,11 +491,14 @@ ca_childcare |>
 # Lab 4, Question 6
 ca_childcare |>
   select(study_year, mc_infant, census_region) |>
-  filter(study_year == 2008 | study_year == 2018) |>
+  filter(study_year %in% c(2008, 2018)) |>
+  group_by(census_region, study_year) |>
+  summarize(median_mc_infant = median(mc_infant, na.rm = TRUE),
+            .groups = "drop") |>
   pivot_wider(names_from = study_year,
-              values_from = mc_infant,
-              values_fn = median) |>
-  slice_min(`2018`)
+             values_from = median_mc_infant,
+             names_prefix = "Year_") |>
+  slice_min(order_by = Year_2018)
 ```
 
 ## Reproducibility
@@ -424,11 +507,11 @@ ca_childcare |>
 
 The following assignments satisfy the above criteria:
 
--   Example 1
--   Example 2
--   Example 3
--   Example 4
--   Example 5
+-   Example 1 - Lab 3
+-   Example 2 - Challenge 3
+-   Example 3 - Lab 4
+-   Example 4 - Challenge 4
+-   Example 5 - Lab 5
 
 **R-2: I can write well documented and tidy code.**
 
@@ -437,12 +520,63 @@ The following assignments satisfy the above criteria:
 ```{r}
 #| label: r-2-1
 
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 -   Example of **dplyr** pipeline
 
 ```{r}
 #| label: r-2-2
+
+# Lab 4, Question 6
+ca_childcare |>
+  select(study_year, mc_infant, census_region) |>
+  filter(study_year %in% c(2008, 2018)) |>
+  group_by(census_region, study_year) |>
+  summarize(median_mc_infant = median(mc_infant, na.rm = TRUE),
+            .groups = "drop") |>
+  pivot_wider(names_from = study_year,
+             values_from = median_mc_infant,
+             names_prefix = "Year_") |>
+  slice_min(order_by = Year_2018)
 
 ```
 
@@ -575,6 +709,21 @@ The following assignments satisfy the above criteria:
 ```{r}
 #| label: dvs-4-summarize
 
+#Lab 3, Question 12
+teacher_evals_clean |>
+  filter(academic_degree %in% c("dr", "prof")) |>
+  group_by(teacher_id) |>
+  summarize(
+    seniority = first(seniority),
+    sex = first(sex),
+    avg_rating = mean(resp_share, na.rm = TRUE),
+    n_courses = n_distinct(course_id),
+    .group = "drop"
+  ) |>
+  filter(
+    avg_rating == min(avg_rating)|
+    avg_rating == max(avg_rating)
+  ) 
 ```
 
 -   Example using `across()`
@@ -618,6 +767,18 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: dvs-5-1
 
+# Lab 4, Question 5
+ca_childcare |>
+  select(study_year, mhi_2018, census_region) |>
+  filter(study_year %in% c(2008, 2018)) |>
+  group_by(census_region, study_year) |>
+  summarize(median_mhi_2018 = median(mhi_2018, na.rm = TRUE),
+            .groups = "drop") |>
+  pivot_wider(names_from = study_year,
+              values_from = median_mhi_2018,
+              names_prefix = "Median Household Income of Year ") |>
+  arrange(desc("Median Household Income of Year 2018"))
+
 ```
 
 -   Example 2
@@ -633,6 +794,18 @@ teacher_evals_clean <- evals |>
 
 ```{r}
 #| label: dvs-6-ex-1
+
+# Lab 4, Question 5
+ca_childcare |>
+  select(study_year, mhi_2018, census_region) |>
+  filter(study_year %in% c(2008, 2018)) |>
+  group_by(census_region, study_year) |>
+  summarize(median_mhi_2018 = median(mhi_2018, na.rm = TRUE),
+            .groups = "drop") |>
+  pivot_wider(names_from = study_year,
+              values_from = median_mhi_2018,
+              names_prefix = "Median Household Income of Year ") |>
+  arrange(desc("Median Household Income of Year 2018"))
 
 ```
 
@@ -721,6 +894,32 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-3-across
 
+# Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
+
 ```
 
 -   using a `map()` function with **one** input (e.g., `map()`, `map_chr()`, `map_dbl()`, etc.)
@@ -751,6 +950,46 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-4-2
 
+
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool"))) |>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 ## Data Simulation & Statisical Models
