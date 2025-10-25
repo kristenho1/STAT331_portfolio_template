@@ -10,7 +10,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [A]{.underline}.
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [B.]{.underline}
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -149,7 +149,7 @@ teacher_evals_compare <- evals |>
 ```{r}
 #| label: wd-3-character
 
-#Lab 5, Woman who hired Jeremy Bowers section 
+#Lab 5
 facebook_event_checkin |>
   left_join(person, by = join_by(person_id == id)) |>
   left_join(drivers_license, by = join_by(license_id == id)) |>
@@ -612,6 +612,14 @@ ca_childcare |>
 ```{r}
 #| label: dvs-1-num
 
+# Lab 4, Question 8
+ggplot(data = ca_childcare, 
+       mapping = aes(x = mhi_2018, y = mc_infant)) +
+  geom_point(color = "darkslategray4") +
+  geom_smooth(method = "lm", color = "red", alpha = 0.5) +
+  labs(title = "Relationship Between Median Household Income and \nWeekly Price of Infant Center-Based Childcare",
+       x = "Median Household Income (2018 dollars)",
+       y = "Center-Based Infant Childcare \nMedian Weekly Price ($)") 
 ```
 
 -   At least one numeric variable and one categorical variable
@@ -619,6 +627,21 @@ ca_childcare |>
 ```{r}
 #| label: dvs-2-num-cat
 
+# Challenge 2, Hot: Embedding the Legend in the Plot Title
+ggplot(data = surveys,
+       mapping = aes(x = species, y = weight, color = sex)) +
+  geom_jitter(alpha = 0.5, color = "steelblue") +
+  scale_color_manual(values = c( "M" = "blue","F" = "green")) +
+  geom_boxplot(outliers = FALSE) +
+  labs(title = "Distribution of Weight for Each Species",
+        subtitle = " Sex: M = <span style = 'color:blue;'>O</span> ; F = <span style = 'color:green;'>O</span>",
+        x = "Species",
+        y = "Weight of Animal (g)") +
+  theme(legend.position='none',
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.subtitle = element_markdown(size = 12),
+        plot.title = element_text(size = 14, face = "bold")
+          )
 ```
 
 -   At least two categorical variables
@@ -626,6 +649,15 @@ ca_childcare |>
 ```{r}
 #| label: dvs-2-cat
 
+# Lab 2, Question 4
+ggplot(data = surveys,
+       mapping = aes(x = weight, y = hindfoot_length)) +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~species, scales = "free_x")+
+  labs(title = "Comparison of Hindfoot Length and Weight of Different Species of Rodents",
+       x = "Weight of Animal (g)",
+       y = NULL,
+       subtitle = "Hindfoot Length of Animal (mm)")
 ```
 
 -   Dates (time series plot)
@@ -642,6 +674,45 @@ ca_childcare |>
 ```{r}
 #| label: dvs-2-ex-1
 
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 -   I can modify my colors to be accessible to anyone's eyes
@@ -649,12 +720,92 @@ ca_childcare |>
 ```{r}
 #| label: dvs-2-ex-2
 
+
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 -   I can modify my plot titles to clearly communicate the data context
 
 ```{r}
 #| label: dvs-2-ex-3
+
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 
 ```
 
@@ -663,12 +814,69 @@ ca_childcare |>
 ```{r}
 #| label: dvs-2-ex-4
 
+# Challenge 2, Hot: Embedding the Legend in the Plot Title
+ggplot(data = surveys,
+       mapping = aes(x = species, y = weight, color = sex)) +
+  geom_jitter(alpha = 0.5, color = "steelblue") +
+  scale_color_manual(values = c( "M" = "blue","F" = "green")) +
+  geom_boxplot(outliers = FALSE) +
+  labs(title = "Distribution of Weight for Each Species",
+        subtitle = " Sex: M = <span style = 'color:blue;'>O</span> ; F = <span style = 'color:green;'>O</span>",
+        x = "Species",
+        y = "Weight of Animal (g)") +
+  theme(legend.position='none',
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.subtitle = element_markdown(size = 12),
+        plot.title = element_text(size = 14, face = "bold")
+          )
+
 ```
 
 -   I can reorder my legend to align with the colors in my plot
 
 ```{r}
 #| label: dvs-2-ex-5
+
+
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 
 ```
 
@@ -679,6 +887,54 @@ ca_childcare |>
 ```{r}
 #| label: dvs-3-1-ex-1
 
+#Lab 4, Question 7
+#Graph before making the revision to the colors in the example 
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(c("darkseagreen", 
+                                                 "cyan",
+                                                 "pink",
+                                                 "salmon", 
+                                                 "deepskyblue", 
+                                                 "purple",
+                                                 "orange", 
+                                                 "red", 
+                                                 "brown", 
+                                                 "yellow"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 -   I can use non-standard colors (Example 2)
@@ -686,12 +942,39 @@ ca_childcare |>
 ```{r}
 #| label: dvs-3-1-ex-2
 
+#Lab 4, Question 8 
+#Revised colors used for geom_smooth
+ggplot(data = ca_childcare, 
+       mapping = aes(x = mhi_2018, y = mc_infant)) +
+  geom_point(color = "darkslategray4") +
+  geom_smooth(method = "lm", color = "coral3", alpha = 0.5) +
+  labs(title = "Relationship Between Median Household Income and \nWeekly Price of Infant Center-Based Childcare",
+       x = "Median Household Income (2018 dollars)",
+       y = "Center-Based Infant Childcare \nMedian Weekly Price ($)") 
+
 ```
 
 -   I can use annotations (e.g., `geom_text()`)
 
 ```{r}
 #| label: dvs-3-2
+
+
+# Challenge 2, Hot: Embedding the Legend in the Plot Title
+ggplot(data = surveys,
+       mapping = aes(x = species, y = weight, color = sex)) +
+  geom_jitter(alpha = 0.5, color = "steelblue") +
+  scale_color_manual(values = c( "M" = "blue","F" = "green")) +
+  geom_boxplot(outliers = FALSE) +
+  labs(title = "Distribution of Weight for Each Species",
+        subtitle = " Sex: M = <span style = 'color:blue;'>O</span> ; F = <span style = 'color:green;'>O</span>",
+        x = "Species",
+        y = "Weight of Animal (g)") +
+  theme(legend.position='none',
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.subtitle = element_markdown(size = 12),
+        plot.title = element_text(size = 14, face = "bold")
+          )
 
 ```
 
@@ -731,31 +1014,7 @@ teacher_evals_clean |>
 ```{r}
 #| label: dvs-4-across
 
-#Lab 3, Question 5
-teacher_evals_clean <- evals |>
-  rename(sex = gender) |>
-  mutate(teacher_id = as.character(teacher_id),
-         question_no = as.character(question_no),
-         across(
-           .cols = c(no_participants, 
-                     resp_share, 
-                     SET_score_avg, 
-                     percent_failed_cur, 
-                     seniority),
-           .fns = ~ as.numeric(.x)
-           )
-         )|>
-  filter(no_participants > 10) |>
-  select(course_id,
-         teacher_id,
-         question_no,
-         no_participants,
-         resp_share,
-         SET_score_avg,
-         percent_failed_cur,
-         academic_degree,
-         seniority,
-         sex)
+
 
 
 ```
@@ -821,6 +1080,18 @@ ca_childcare |>
 ```{r}
 #| label: dvs-6-ex-3
 
+
+# Lab 4, Question 5
+ca_childcare |>
+  select(study_year, mhi_2018, census_region) |>
+  filter(study_year %in% c(2008, 2018)) |>
+  group_by(census_region, study_year) |>
+  summarize(median_mhi_2018 = median(mhi_2018, na.rm = TRUE),
+            .groups = "drop") |>
+  pivot_wider(names_from = study_year,
+              values_from = median_mhi_2018,
+              names_prefix = "Median Household Income of Year ") |>
+  arrange(desc("Median Household Income of Year 2018"))
 ```
 
 **DVS-7: I show creativity in my tables.**
@@ -848,12 +1119,63 @@ ca_childcare |>
 ```{r}
 #| label: pe-1-one-call
 
+#Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
 ```
 
 -   using `across()`
 
 ```{r}
 #| label: pe-1-across
+
+#Lab 3, Question 5
+teacher_evals_clean <- evals |>
+  rename(sex = gender) |>
+  mutate(teacher_id = as.character(teacher_id),
+         question_no = as.character(question_no),
+         across(
+           .cols = c(no_participants, 
+                     resp_share, 
+                     SET_score_avg, 
+                     percent_failed_cur, 
+                     seniority),
+           .fns = ~ as.numeric(.x)
+           )
+         )|>
+  filter(no_participants > 10) |>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg,
+         percent_failed_cur,
+         academic_degree,
+         seniority,
+         sex)
 
 ```
 
@@ -943,6 +1265,23 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-4-1
 
+# Challenge 3, Question 2
+# Revised percent() function to use label_percent() since percent() is a superseeded function
+library(scales)
+ggplot(data = teacher_evals_compare,
+       mapping = aes(x = sen_level, fill = set_level)) +
+  geom_bar(position ="fill") +
+  scale_y_continuous(labels = label_percent(suffix = "%")) + 
+  scale_fill_manual(values = c("excellent" = "#B896d4",
+                               "standard" = "#Ba955c")) +
+  labs(title = "Evaluation of Teachers' Use of Activities",
+       x = "Years of Experience",
+       y = NULL,
+       fill = "Evaluation Rating") +
+  theme_bw() +
+  theme(
+        legend.position = "top"
+        )
 ```
 
 -   I can connect a data wrangling pipeline into a `ggplot()`
