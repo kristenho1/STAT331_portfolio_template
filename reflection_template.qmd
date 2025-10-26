@@ -90,6 +90,46 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: wd-2-ex-3
 
+
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, census_region, starts_with("mc_")) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 **WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -149,18 +189,26 @@ teacher_evals_compare <- evals |>
 ```{r}
 #| label: wd-3-character
 
-#Lab 5
+# Lab 5
+features <- tibble(car_make = "Tesla",
+                   car_model = "Model S",
+                   hair_color = "red",
+                   gender = "female")
+
 facebook_event_checkin |>
   left_join(person, by = join_by(person_id == id)) |>
   left_join(drivers_license, by = join_by(license_id == id)) |>
-  filter(car_make == "Tesla",
-         car_model == "Model S",
-         height %in% c(65, 66, 67),
-         hair_color == "red",
-         gender == "female",
-         str_detect(event_name, pattern = "SQL Symphony Concert")) |>
+  filter(height %in% c(65, 66, 67),
+         str_detect(event_name, pattern = "SQL Symphony Concert"))|>
+  semi_join(features, by = join_by(car_make,
+                                   car_model,
+                                   hair_color,
+                                   gender)) |>
+  mutate(date = ymd(date))|>
+  filter(year(date) == 2017,
+         month(date) == 12) |>
   group_by(person_id) |>
-  summarize(event_count  = sum(str_detect(date, "^201712"))) |>
+  summarize(event_count  = n()) |>
   filter(event_count == 3) |>
   left_join(person, by = join_by(person_id == id)) |>
   pull(person_id, name)
@@ -172,18 +220,26 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-3-string
 
-#Lab 5, Woman who hired Jeremy Bowers section 
+# Lab 5
+features <- tibble(car_make = "Tesla",
+                   car_model = "Model S",
+                   hair_color = "red",
+                   gender = "female")
+
 facebook_event_checkin |>
   left_join(person, by = join_by(person_id == id)) |>
   left_join(drivers_license, by = join_by(license_id == id)) |>
-  filter(car_make == "Tesla",
-         car_model == "Model S",
-         height %in% c(65, 66, 67),
-         hair_color == "red",
-         gender == "female",
-         str_detect(event_name, pattern = "SQL Symphony Concert")) |>
+  filter(height %in% c(65, 66, 67),
+         str_detect(event_name, pattern = "SQL Symphony Concert"))|>
+  semi_join(features, by = join_by(car_make,
+                                   car_model,
+                                   hair_color,
+                                   gender)) |>
+  mutate(date = ymd(date))|>
+  filter(year(date) == 2017,
+         month(date) == 12) |>
   group_by(person_id) |>
-  summarize(event_count  = sum(str_detect(date, "^201712"))) |>
+  summarize(event_count  = n()) |>
   filter(event_count == 3) |>
   left_join(person, by = join_by(person_id == id)) |>
   pull(person_id, name)
@@ -195,6 +251,30 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-3-date
 
+# Lab 5
+# made revision 
+features <- tibble(car_make = "Tesla",
+                   car_model = "Model S",
+                   hair_color = "red",
+                   gender = "female")
+
+facebook_event_checkin |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(height %in% c(65, 66, 67),
+         str_detect(event_name, pattern = "SQL Symphony Concert"))|>
+  semi_join(features, by = join_by(car_make,
+                                   car_model,
+                                   hair_color,
+                                   gender)) |>
+  mutate(date = ymd(date))|>
+  filter(year(date) == 2017,
+         month(date) == 12) |>
+  group_by(person_id) |>
+  summarize(event_count  = n()) |>
+  filter(event_count == 3) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  pull(person_id, name)
 ```
 
 **WD-4: I can modify existing variables and create new variables in a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
@@ -344,6 +424,19 @@ ca_childcare <- ca_childcare |>
 ```{r}
 #| label: wd-4-date
 
+
+#Lab 5
+#Made revision 
+get_fit_now_check_in |>
+  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  inner_join(drivers_license, by = join_by(license_id == id)) |>
+  mutate(check_in_date = ymd(check_in_date)) |>
+  filter(str_detect(membership_id, "^48Z"),
+         membership_status == "gold",
+         str_detect(plate_number, "H42W*"),
+         check_in_date == "2018-01-09") |>
+  pull(person_id, name.x)
 ```
 
 **WD-5: I can use mutating joins to combine multiple dataframes.**
@@ -353,18 +446,27 @@ ca_childcare <- ca_childcare |>
 ```{r}
 #| label: wd-5-left-ex-1
 
-#Lab 5, Woman who hired Jeremy Bowers section 
+# Lab 5
+# made revision 
+features <- tibble(car_make = "Tesla",
+                   car_model = "Model S",
+                   hair_color = "red",
+                   gender = "female")
+
 facebook_event_checkin |>
   left_join(person, by = join_by(person_id == id)) |>
   left_join(drivers_license, by = join_by(license_id == id)) |>
-  filter(car_make == "Tesla",
-         car_model == "Model S",
-         height %in% c(65, 66, 67),
-         hair_color == "red",
-         gender == "female",
-         str_detect(event_name, pattern = "SQL Symphony Concert")) |>
+  filter(height %in% c(65, 66, 67),
+         str_detect(event_name, pattern = "SQL Symphony Concert"))|>
+  semi_join(features, by = join_by(car_make,
+                                   car_model,
+                                   hair_color,
+                                   gender)) |>
+  mutate(date = ymd(date))|>
+  filter(year(date) == 2017,
+         month(date) == 12) |>
   group_by(person_id) |>
-  summarize(event_count  = sum(str_detect(date, "^201712"))) |>
+  summarize(event_count  = n()) |>
   filter(event_count == 3) |>
   left_join(person, by = join_by(person_id == id)) |>
   pull(person_id, name)
@@ -389,14 +491,16 @@ ca_childcare <-
 #| label: wd-5-left-right-ex-2
 
 #Lab 5
+#Made revision 
 get_fit_now_check_in |>
   left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
   left_join(person, by = join_by(person_id == id)) |>
-  left_join(drivers_license, by = join_by(license_id == id)) |>
+  inner_join(drivers_license, by = join_by(license_id == id)) |>
+  mutate(check_in_date = ymd(check_in_date)) |>
   filter(str_detect(membership_id, "^48Z"),
          membership_status == "gold",
          str_detect(plate_number, "H42W*"),
-         check_in_date == "20180109") |>
+         check_in_date == "2018-01-09") |>
   pull(person_id, name.x)
 ```
 
@@ -417,6 +521,18 @@ ca_childcare <-
 ```{r}
 #| label: wd-5-inner-ex-2
 
+#Lab 5
+#Made revision 
+get_fit_now_check_in |>
+  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  inner_join(drivers_license, by = join_by(license_id == id)) |>
+  mutate(check_in_date = ymd(check_in_date)) |>
+  filter(str_detect(membership_id, "^48Z"),
+         membership_status == "gold",
+         str_detect(plate_number, "H42W*"),
+         check_in_date == "2018-01-09") |>
+  pull(person_id, name.x)
 ```
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
@@ -426,6 +542,30 @@ ca_childcare <-
 ```{r}
 #| label: wd-6-semi
 
+
+# Lab 5
+features <- tibble(car_make = "Tesla",
+                   car_model = "Model S",
+                   hair_color = "red",
+                   gender = "female")
+
+facebook_event_checkin |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(height %in% c(65, 66, 67),
+         str_detect(event_name, pattern = "SQL Symphony Concert"))|>
+  semi_join(features, by = join_by(car_make,
+                                   car_model,
+                                   hair_color,
+                                   gender)) |>
+  mutate(date = ymd(date))|>
+  filter(year(date) == 2017,
+         month(date) == 12) |>
+  group_by(person_id) |>
+  summarize(event_count  = n()) |>
+  filter(event_count == 3) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  pull(person_id, name)
 ```
 
 -   `anti_join()`
@@ -433,6 +573,12 @@ ca_childcare <-
 ```{r}
 #| label: wd-6-anti
 
+#Lab 5 
+#Revised to add an anti-join 
+person |>
+  anti_join(interview, by = join_by(id == person_id)) |>
+  filter(id == 99716) |>
+  pull(id, name)
 ```
 
 **WD-7: I can pivot dataframes from long to wide and visa versa**
@@ -445,7 +591,7 @@ ca_childcare <-
 #Lab 4, Question 7 
 #Made a revision to the colorRampPalette to use the colors that match the example graph
 ca_childcare |>
-  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  select(study_year, census_region, starts_with("mc_")) |>
   mutate(Infant = mc_infant,
          Toddler = mc_toddler, 
          Preschool = mc_preschool) |>
@@ -594,6 +740,18 @@ ca_childcare |>
 ```{r}
 #| label: r-3-example
 
+
+# Lab 4, Question 6
+ca_childcare |>
+  select(study_year, mc_infant, census_region) |>
+  filter(study_year %in% c(2008, 2018)) |>
+  group_by(census_region, study_year) |>
+  summarize(median_mc_infant = median(mc_infant, na.rm = TRUE),
+            .groups = "drop") |>
+  pivot_wider(names_from = study_year,
+             values_from = median_mc_infant,
+             names_prefix = "Year_") |>
+  slice_min(order_by = Year_2018)
 ```
 
 -   Example (function stops)
@@ -665,6 +823,45 @@ ggplot(data = surveys,
 ```{r}
 #| label: dvs-2-date
 
+#Lab 4, Question 7 
+#Made a revision to the colorRampPalette to use the colors that match the example graph
+ca_childcare |>
+  select(study_year, mc_infant, mc_toddler, mc_preschool, census_region) |>
+  mutate(Infant = mc_infant,
+         Toddler = mc_toddler, 
+         Preschool = mc_preschool) |>
+  pivot_longer(cols = c(Infant, Toddler, Preschool),
+               names_to = "childcare_center",
+               values_to = "median_price") |>
+  mutate(childcare_center = fct(childcare_center, 
+                                levels = c("Infant",
+                                           "Toddler",
+                                           "Preschool")))|>
+  ggplot(mapping = aes(x = study_year, 
+                    y = median_price,
+                    color = fct_reorder2(.f = census_region,
+                                        .x = study_year,
+                                        .y = median_price,
+                                        .fun = last2,
+                                        .desc = TRUE))) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(0,500),
+                     breaks = seq(0,500, 100)) +
+  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              linewidth = 0.5,
+              fill = "grey",
+              alpha = 0.5) +
+  facet_wrap(~childcare_center, scales = "free_x") +
+  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "California Region") +
+  theme_bw() +
+  theme(aspect.ratio = 1,
+        axis.text.x = element_text(size = 6))
 ```
 
 **DVS-2: I use plot modifications to make my visualization clear to the reader.**
@@ -1045,6 +1242,12 @@ ca_childcare |>
 ```{r}
 #| label: dvs-5-2
 
+# Lab 3, Question 9
+teacher_evals_clean |>
+  count(teacher_id, course_id, sort = TRUE) |>
+  filter(n == 9) |>
+  summarize(num_combos = n())
+
 ```
 
 **DVS-6: I can create tables which make my summaries clear to the reader.**
@@ -1356,6 +1559,10 @@ ca_childcare |>
 ```{r}
 #| label: dsm-2-1
 
+#Lab 4, Question 9
+reg_mod1 <- lm(mc_infant ~ mhi_2018,data = ca_childcare)
+summary(reg_mod1)
+
 ```
 
 -   Example 2
@@ -1363,6 +1570,11 @@ ca_childcare |>
 ```{r}
 #| label: dsm-2-2
 
+#Challenge 3, Question 3
+teacher_evals_compare|>
+  select(set_level, sen_level) |>
+  table() |>
+  chisq.test()
 ```
 
 -   Example 3
@@ -1385,5 +1597,7 @@ ca_childcare |>
 ## Peer Support & Collaboration
 
 <!-- Include an image or a description of feedback you gave that you are proud of (either in a peer review or in Discord). -->
+
+![](images/clipboard-1817111899.png)
 
 <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
