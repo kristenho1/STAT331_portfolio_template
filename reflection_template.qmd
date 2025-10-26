@@ -10,7 +10,7 @@ execute:
   echo: true
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [B.]{.underline}
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [A-.]{.underline}
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
@@ -83,6 +83,31 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: wd-2-ex-2
 
+#Lab 5, The woman who hired Jeremy Bowers
+# revised to remove event_id
+features <- tibble(car_make = "Tesla",
+                   car_model = "Model S",
+                   hair_color = "red",
+                   gender = "female")
+
+facebook_event_checkin |>
+  select(-event_id) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  left_join(drivers_license, by = join_by(license_id == id)) |>
+  filter(height %in% c(65, 66, 67),
+         str_detect(event_name, pattern = "SQL Symphony Concert"))|>
+  semi_join(features, by = join_by(car_make,
+                                   car_model,
+                                   hair_color,
+                                   gender)) |>
+  mutate(date = ymd(date))|>
+  filter(year(date) == 2017,
+         month(date) == 12) |>
+  group_by(person_id) |>
+  summarize(event_count  = n()) |>
+  filter(event_count == 3) |>
+  left_join(person, by = join_by(person_id == id)) |>
+  pull(person_id, name)
 ```
 
 -   Example selecting columns based on logical values (e.g., `starts_with()`, `ends_with()`, `contains()`, `where()`)
@@ -1596,11 +1621,10 @@ summary(reg_mod1)
 ```{r}
 #| label: dsm-2-2
 
-#Challenge 3, Question 3
-teacher_evals_compare|>
-  select(set_level, sen_level) |>
-  table() |>
-  chisq.test()
+#Lab 2, Question 17
+species_mod <- aov(weight ~ species, data = surveys)
+
+summary(species_mod)
 ```
 
 -   Example 3
