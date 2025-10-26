@@ -1180,6 +1180,28 @@ ggplot(data = surveys,
 ```{r}
 #| label: dvs-3-3
 
+# Challenge 4
+ca_childcare |>
+  mutate(Center_based = mcsa,
+         Family = mfccsa) |>
+  pivot_longer(cols = c(Center_based, Family),
+             names_to = "childcare_type",
+             values_to = "median_price") |>
+  ggplot(mapping = aes(x = study_year, 
+                       y = median_price,
+                       color = childcare_type)) +
+  scale_x_continuous(limits = c(2008, 2018),
+                     breaks = seq(2008,2018,2)) +
+  scale_y_continuous(limits = c(100, 180),
+                     breaks = seq(100,180,20)) +
+  scale_color_manual(values = colorRampPalette(c("blue","red"))(2)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth() +
+  theme_bw() +
+  labs(title = "Weekly Median Price of Center-Based Childcare vs. \nFamily Childcare Across California ($)",
+       x = "Study Year",
+       y = NULL,
+       color = "Childcare Type")
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
@@ -1211,7 +1233,11 @@ teacher_evals_clean |>
 ```{r}
 #| label: dvs-4-across
 
-
+# Lab 3, Question 6
+summarize(teacher_evals_clean,
+          across(.cols = c(teacher_id, course_id),
+                 .fns = n_distinct,
+                 .names = "unique_{.col}"))
 
 
 ```
@@ -1590,14 +1616,22 @@ teacher_evals_compare|>
 
 <!-- For the revisions included in your Portfolio, to help me understand the nature of your revisions, please denote somehow the feedback I provided you (e.g., boldface, italics, colored text) before your revisions. -->
 
+Throughout this course I revised my thinking by taking the feedback received from my labs and challenges and understanding how I can incorporate it into future assignments. For example, I received feedback on how I can use functions or operators, such as %in%, and began incorporating it into my future assignments instead of using the or ( \| ) operator. In this portfolio, I revised my thinking by finding ways to incorporate functions I didn't use initially in my labs in order to make the code look more efficient and tidy. These revisions are denoted in each of the code chunks through this portfolio.
+
 ## Extending My Thinking
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
+
+I extended my thinking by taking the time to understand each function and find the most efficient way to incorporate this into my code. To accomplish this, I would ask myself if there was a different way to format my code or other variations of functions. For example, when figuring out how to display both min and max into the same pipeline for lab 3, I wondered if there was a way to slice_min and slice_max instead of using the regular min and max summary functions to see if there was a way to make my process simpler. In this portfolio, I extended my thinking by figuring out examples could be used for multiple learning targets and how they can be revised to apply to more learning targets
 
 ## Peer Support & Collaboration
 
 <!-- Include an image or a description of feedback you gave that you are proud of (either in a peer review or in Discord). -->
 
+Below is my peer review from Lab 3. I'm particularly proud of this code because I feel that I gave valuable feedback on code formatting. I first stated which parts of the lab I thought looked great and specified why the simple formatting notations was important. I then explained what could be improved and gave an example on where the improvement can be made.
+
 ![](images/clipboard-1817111899.png)
 
 <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
+
+Initially during pair programming, I found it difficult at times because I'm use to sharing my ideas my ideas back and forth in the moment, and sometimes struggle with forming the right questions or recalling how to use functions we learned. However, as we did more practice activities, it became easier to think on my own before asking for help either from my partner or from Dr. T or Jasmine. I got more into the rhythm of asking insightful questions that allow the coder to think on their own without me sharing my ideas.
