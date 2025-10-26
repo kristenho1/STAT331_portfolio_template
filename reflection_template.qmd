@@ -8,6 +8,8 @@ editor: visual
 execute: 
   eval: false
   echo: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 [**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [A-.]{.underline}
@@ -199,7 +201,7 @@ teacher_evals_clean <- evals |>
 -   Numeric Example 2
 
 ```{r}
-#| label: wd-3-numeric-ex-1
+#| label: wd-3-numeric-ex-2
 
 # Challenge 3, Question 1
 teacher_evals_compare <- evals |>
