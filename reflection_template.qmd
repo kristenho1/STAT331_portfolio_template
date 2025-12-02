@@ -43,6 +43,13 @@ evals <- read_csv(here::here("Week 3", "Lab 3", "teacher_evals.csv"))
 ```{r}
 #| label: wd-1-xlsx
 
+# Practice Activity 4
+military <- read_xlsx("gov_spending_per_capita.xlsx",
+                      sheet = "Share of Govt. spending",
+                      skip  = 7,
+                      n_max = 191,
+                      na = c(". .", "xxx", "..")
+                      )
 ```
 
 **WD-2: I can select necessary columns from a dataset.**
@@ -224,7 +231,7 @@ teacher_evals_compare <- evals |>
 features <- tibble(car_make = "Tesla",
                    car_model = "Model S",
                    hair_color = "red",
-                   gender = "female")
+                   gender = "female")  
 
 facebook_event_checkin |>
   select(-event_id) |>
@@ -790,6 +797,34 @@ ca_childcare |>
 ```{r}
 #| label: r-2-3
 
+# Lab 8, Question 3 (need to modify a little bit)
+# Feedback: You should be able to remove the _ in one line of code.
+# Revision: Replaced all _ in one line and edited the labels within the titles to make the plot look cleaner and the code more tidy
+
+plot_design <- function(df, x, y, var = island){
+  
+  x_label <- as_label(enquo(x)) |>
+              str_replace_all("_", " ") |>
+              str_to_title()
+  
+  y_label <- as_label(enquo(y)) |>
+              str_replace_all("_", " ") |>
+              str_to_title()
+                
+  label <- rlang::englue("Correlation Between {x_label |>
+                         str_remove} and {y_label} based on {str_to_title(as_label(enquo(var)))}")
+  
+  df |>
+    ggplot(mapping = aes(x = {{x}}, 
+                         y = {{y}},
+                         color = {{var}})) +
+    geom_point() +
+    labs(title = label, 
+        x = x_label,
+        y = y_label,
+        color = str_to_title(as_label(enquo(var)))
+    )
+}
 ```
 
 **R-3: I can write robust programs that are resistant to changes in inputs.**
@@ -820,6 +855,13 @@ ca_childcare |>
 ```{r}
 #| label: r-3-function-stops
 
+# Lab 7, Question 4
+rescale_01 <- function(scaled){
+  stopifnot(is.numeric(scaled),
+            length(scaled) > 1)
+  range <- range(scaled, na.rm = TRUE)
+  scaled = (scaled - range[1]) / (range[2] - range[1])
+}
 ```
 
 ## Data Visualization & Summarization
@@ -1385,6 +1427,43 @@ ca_childcare |>
 ```{r}
 #| label: dvs-6-ex-2
 
+# Lab 9, Question 6
+evals_convert |>
+    distinct(teacher_id, .keep_all = TRUE) |>
+    mutate(Seniority = case_when(seniority <= 4 ~ "Junior",
+                              seniority <= 8 ~ "Senior",
+                              seniority > 8 ~ "Very Senior"),
+         `Academic Degree` = case_when(academic_degree == "dr" ~ "Doctorate",
+                                       academic_degree == "ma" ~ "Masters",
+                                       academic_degree == "prof" ~ "Tenured Professor",
+                                       .default = "No Degree"),
+         Sex = if_else(sex == "male", "Male", "Female")
+  ) |>
+  select(`Academic Degree`, 
+         Seniority,
+         Sex) |>
+  map(.f = ~ data.frame(level = names(table(.x)),
+               n = as.numeric(table(.x)),
+               prop = as.numeric(prop.table(table(.x))))
+      )|>
+  bind_rows(.id = "variables")|>
+  gt(rowname_col = "level",
+     groupname_col = "variables") |>
+  tab_stubhead(label = md("**Demographic**")) |>
+  tab_header(title = "Demographics of Professors",
+             subtitle = "Student Evaluations at the University of Poland, Warsaw in 2020") |>
+  tab_spanner(label = md("**Professors**"),
+              columns = c("n", "prop")) |>
+  fmt_percent(columns = "prop",
+              rows = everything(),
+              decimals = 2) |>
+  cols_label_with(columns = n, 
+                  fn = ~ md("**Count**")) |>
+  cols_label_with(columns = prop, 
+                  fn = ~ md("**%**")) |>
+  tab_style(style = list(cell_fill(color = "lightgrey"), 
+                         cell_text(weight = "bold")),
+            locations = cells_row_groups())
 ```
 
 -   I can arrange my table to have an intuitive ordering
@@ -1416,6 +1495,29 @@ ca_childcare |>
 ```{r}
 #| label: dvs-7-ex-1
 
+# Lab 9, Question 8 (change colors)
+# Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
+
+fish |>
+  map_int(.f = ~ sum(is.na(.x))) |>
+  enframe(name = "Measurement Variable",
+          value = "Missing Values") |>
+  arrange(`Missing Values`) |>
+  gt() |>
+  tab_header(title = "Number of Missing Values for Fish Measurements",
+             subtitle = "Data collected from 1989 to 2006 on the Blackfoot Fish River in Montana") |>
+  data_color(method = "numeric",
+             columns = `Missing Values`,
+             fn = function(x) {
+                           case_when(
+                             x == 0 ~ "red",
+                             x > 0 ~ "green"
+                           )
+                         }) |>
+  cols_label(`Measurement Variable` = md("**Measurement Variable**"),
+             `Missing Values` = md("**Missing Values**")) |>
+  tab_style(style = cell_text(align = "center"),
+            location = cells_column_labels(everything()))
 ```
 
 -   I can modify the layout of my table to be more readable (e.g., `pivot_longer()` or `pivot_wider()`)
@@ -1423,6 +1525,17 @@ ca_childcare |>
 ```{r}
 #| label: dvs-7-ex-2
 
+# Lab 8, Question 2 (need to include a data check)
+# Feedback: Input checks for data frame functions are tricky, but an easy one is to check if the data frame being input is actually a data frame (not a vector or a matrix).
+
+pivot_table <- function(df, col_var, row_var){
+  df |>
+    count({{col_var}}, {{row_var}}) |>
+    pivot_wider(names_from = {{col_var}},
+                values_from = n,
+                values_fill = 0) |>
+    adorn_totals("row")
+}
 ```
 
 ## Program Efficiency
@@ -1499,6 +1612,30 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-1-map-1
 
+
+# Lab 9, Question 8 (change colors)
+# Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
+
+fish |>
+  map_int(.f = ~ sum(is.na(.x))) |>
+  enframe(name = "Measurement Variable",
+          value = "Missing Values") |>
+  arrange(`Missing Values`) |>
+  gt() |>
+  tab_header(title = "Number of Missing Values for Fish Measurements",
+             subtitle = "Data collected from 1989 to 2006 on the Blackfoot Fish River in Montana") |>
+  data_color(method = "numeric",
+             columns = `Missing Values`,
+             fn = function(x) {
+                           case_when(
+                             x == 0 ~ "red",
+                             x > 0 ~ "green"
+                           )
+                         }) |>
+  cols_label(`Measurement Variable` = md("**Measurement Variable**"),
+             `Missing Values` = md("**Missing Values**")) |>
+  tab_style(style = cell_text(align = "center"),
+            location = cells_column_labels(everything()))
 ```
 
 **PE-2: I can write functions to reduce repetition in my code.**
@@ -1508,12 +1645,32 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-2-1
 
+
+# Lab 7, Question 4
+rescale_01 <- function(scaled){
+  stopifnot(is.numeric(scaled),
+            length(scaled) > 1)
+  range <- range(scaled, na.rm = TRUE)
+  scaled = (scaled - range[1]) / (range[2] - range[1])
+}
 ```
 
 -   Example 2: Function that operates on data frames
 
 ```{r}
 #| label: pe-2-2
+
+# Lab 8, Question 2 (need to include a data check)
+# Feedback: Input checks for data frame functions are tricky, but an easy one is to check if the data frame being input is actually a data frame (not a vector or a matrix).
+
+pivot_table <- function(df, col_var, row_var){
+  df |>
+    count({{col_var}}, {{row_var}}) |>
+    pivot_wider(names_from = {{col_var}},
+                values_from = n,
+                values_fill = 0) |>
+    adorn_totals("row")
+}
 
 ```
 
@@ -1522,6 +1679,19 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-2-3
 
+# Challenge 7, Question 2 (need to modify)
+# Feedback: What types of inputs does your function expect?
+
+clean_data <- function(x, min, max){
+  if(length(x) <= 1){
+    return(NA)
+  }
+  case_when(
+    x < min ~ NA,
+    x > max ~ NA,
+    .default = x
+  )
+}
 ```
 
 **PE-3:I can use iteration to reduce repetition in my code.**
@@ -1564,12 +1734,38 @@ teacher_evals_clean <- evals |>
 ```{r}
 #| label: pe-3-map-1
 
+
+# Lab 9, Question 8 (change colors)
+# Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
+
+fish |>
+  map_int(.f = ~ sum(is.na(.x))) |>
+  enframe(name = "Measurement Variable",
+          value = "Missing Values") |>
+  arrange(`Missing Values`) |>
+  gt() |>
+  tab_header(title = "Number of Missing Values for Fish Measurements",
+             subtitle = "Data collected from 1989 to 2006 on the Blackfoot Fish River in Montana") |>
+  data_color(method = "numeric",
+             columns = `Missing Values`,
+             fn = function(x) {
+                           case_when(
+                             x == 0 ~ "red",
+                             x > 0 ~ "green"
+                           )
+                         }) |>
+  cols_label(`Measurement Variable` = md("**Measurement Variable**"),
+             `Missing Values` = md("**Missing Values**")) |>
+  tab_style(style = cell_text(align = "center"),
+            location = cells_column_labels(everything()))
 ```
 
 -   using a `map()` function with **more than one** input (e.g., `map_2()` or `pmap()`)
 
 ```{r}
 #| label: pe-3-map-2
+
+# NEED TO CHECK 
 
 ```
 
@@ -1656,6 +1852,25 @@ ca_childcare |>
 ```{r}
 #| label: dsm-1-1
 
+# Lab 10, Question 1
+
+randomBabies <- function(n_babies){
+  tibble(parents = 1:n_babies,
+         baby = sample(1:n_babies,
+                       size = n_babies, 
+                       replace = T)) |>
+  filter(parents == baby) |>
+  nrow()
+}
+
+set.seed(6)
+
+results <- map_int(.x = 1:10000,
+                   .f = ~ randomBabies(n_babies = 4)
+                  )
+
+table(results)
+
 ```
 
 -   Example 2
@@ -1663,6 +1878,41 @@ ca_childcare |>
 ```{r}
 #| label: dsm-1-2
 
+# Lab 10, Question 8(function) & 9 (simulation)
+mycifun <- function(beta0, beta1, n){
+  # define slope and intercept parameters
+  intercept = beta0
+  slope = beta1
+  
+  # generate x vector
+  x <- runif(n = n, min = 0, max = 1)
+  
+  # generate noise `ep` vector
+  ep <- rnorm(n = n, mean = 0, sd = 1)
+  
+  # generate outcome from population model
+  y = intercept + x*slope + ep
+  
+  
+  # create an "observed data" dataframe with only the x and y vectors
+  obs_data <- data.frame(x = x,
+                         y = y)
+  
+  obs_data_lm <- lm(formula = y ~ x,
+                  data = obs_data) |>
+    
+                  tidy(conf.int = TRUE,
+                       conf.level = 0.95) |>
+                  filter(term == "x") |>
+                  select(estimate, conf.low, conf.high) |>
+                  
+                  mutate(cover = if_else((beta1 >= conf.low & beta1 <= conf.high), 1, 0))
+  
+  return(obs_data_lm)
+}
+
+mycifun(beta0 = 1, beta1 = 2, n = 1000)
+  
 ```
 
 **DSSM-2: I can conduct common statistical analyses in R.**
@@ -1694,6 +1944,9 @@ summary(species_mod)
 ```{r}
 #| label: dsm-2-3
 
+# Lab 10, Question 5
+obs_data_lm <- lm(formula = y ~ x,
+                  data = obs_data)
 ```
 
 ## Revising My Thinking
