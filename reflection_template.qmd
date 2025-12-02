@@ -449,23 +449,34 @@ ca_childcare |>
 ```{r}
 #| label: wd-4-string
 
-#Lab 4, Question 4
-#Feedback: You should only call the mutate() function once
+# Lab 8, Question 3 (need to modify a little bit)
+# Feedback: You should be able to remove the _ in one line of code.
+# Revision: Replaced all _ in one line and edited the labels within the titles to make the plot look cleaner and the code more tidy
 
-ca_childcare <- ca_childcare |> 
-  mutate(county_name = str_remove(county_name, " County"),
-         census_region = fct_collapse(.f = county_name,
-                                      "Superior County" = superior_counties,
-                                      "North Coast" = north_coast_counties,
-                                      "San Francisco Bay Area"  = san_fran_counties,
-                                      "Central Coast" = central_coast_counties,
-                                      "Southern San Joaquin Valley" = s_san_joaquin_counties,
-                                      "Northern San Joaquin Valley" = n_san_joaquin_counties,
-                                      "Inland Empire" = inland_counties,
-                                      "Los Angeles County" = la_county,
-                                      "Orange County" = orange_county,
-                                      "San Diego-Imperial" = san_diego_imperial_counties
-                                      ))
+plot_design <- function(df, x, y, var = island){
+  
+  x_label <- as_label(enquo(x)) |>
+              str_replace_all("_", " ") |>
+              str_to_title()
+  
+  y_label <- as_label(enquo(y)) |>
+              str_replace_all("_", " ") |>
+              str_to_title()
+                
+  label <- rlang::englue("Correlation Between {x_label |>
+                         str_remove} and {y_label} based on {str_to_title(as_label(enquo(var)))}")
+  
+  df |>
+    ggplot(mapping = aes(x = {{x}}, 
+                         y = {{y}},
+                         color = {{var}})) +
+    geom_point() +
+    labs(title = label, 
+        x = x_label,
+        y = y_label,
+        color = str_to_title(as_label(enquo(var)))
+    )
+}
 ```
 
 -   Date (example must use functions from **lubridate**)
@@ -568,7 +579,8 @@ get_fit_now_check_in |>
 ca_childcare <- 
   filter(.data = counties, state_abbreviation == "CA") |>
   inner_join(y = childcare_costs,
-            by = county_fips_code) 
+            by = join_by(county_fips_code)) |>
+  select(county_name, study_year, mcsa, mfccsa)
 ```
 
 -   `inner_join()` Example 2
@@ -695,19 +707,16 @@ ca_childcare |>
 ```{r}
 #| label: wd-7-wide
 
-# Lab 4, Question 6
-#Feedback: Each of these regions should have multiple values for each year, so you should need a group_by() + summarize() step before you pivot your table.
-
-ca_childcare |>
-  select(study_year, mc_infant, census_region) |>
-  filter(study_year %in% c(2008, 2018)) |>
-  group_by(census_region, study_year) |>
-  summarize(median_mc_infant = median(mc_infant, na.rm = TRUE),
-            .groups = "drop") |>
-  pivot_wider(names_from = study_year,
-             values_from = median_mc_infant,
-             names_prefix = "Year_") |>
-  slice_min(order_by = Year_2018)
+# Lab 8, Question 2 (modify)
+# Feedback: Input checks for data frame functions are tricky, but an easy one is to check if the data frame being input is actually a data frame (not a vector or a matrix).
+pivot_table <- function(df, col_var, row_var){
+  df |>
+    count({{col_var}}, {{row_var}}) |>
+    pivot_wider(names_from = {{col_var}},
+                values_from = n,
+                values_fill = 0) |>
+    adorn_totals("row")
+}
 ```
 
 ## Reproducibility
@@ -1274,21 +1283,24 @@ ggplot(data = ca_childcare,
 #| label: dvs-3-2
 
 
-# Challenge 2, Hot: Embedding the Legend in the Plot Title
-ggplot(data = surveys,
-       mapping = aes(x = species, y = weight, color = sex)) +
-  geom_jitter(alpha = 0.5, color = "steelblue") +
-  scale_color_manual(values = c( "M" = "blue","F" = "green")) +
-  geom_boxplot(outliers = FALSE) +
-  labs(title = "Distribution of Weight for Each Species",
-        subtitle = " Sex: M = <span style = 'color:blue;'>O</span> ; F = <span style = 'color:green;'>O</span>",
-        x = "Species",
-        y = "Weight of Animal (g)") +
-  theme(legend.position='none',
-        axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.subtitle = element_markdown(size = 12),
-        plot.title = element_text(size = 14, face = "bold")
-          )
+# Lab 10, Question 3 (modify)
+# Feedback: How many total babies could have been assigned? 4? 5? 6? That information should be included in you plot title! How many simultations were run? That information should be included in your title!
+
+results |>
+  enframe(name = "Simulation",
+          value = "Number of Babies") |>
+  count(`Number of Babies`, 
+        name = "Count") |>
+  mutate(Proportion = (Count / sum(Count))) |>
+  ggplot(mapping = aes(x = `Number of Babies`, y = Proportion)) +
+  geom_col(fill = "cadetblue2") +
+  geom_text(aes(label = percent(Proportion, accuracy = 0.1)), 
+            vjust = -0.5, size = 3) +
+  scale_y_continuous(labels = label_percent(suffix = "%")) +
+  theme_bw() +
+  labs(title = "Proportion of the Number of Babies Returned to their Respective Parents",
+       y = "Proportion (%)")
+          
 
 ```
 
@@ -1297,28 +1309,39 @@ ggplot(data = surveys,
 ```{r}
 #| label: dvs-3-3
 
-# Challenge 4
-ca_childcare |>
-  mutate(Center_based = mcsa,
-         Family = mfccsa) |>
-  pivot_longer(cols = c(Center_based, Family),
-             names_to = "childcare_type",
-             values_to = "median_price") |>
-  ggplot(mapping = aes(x = study_year, 
-                       y = median_price,
-                       color = childcare_type)) +
-  scale_x_continuous(limits = c(2008, 2018),
-                     breaks = seq(2008,2018,2)) +
-  scale_y_continuous(limits = c(100, 180),
-                     breaks = seq(100,180,20)) +
-  scale_color_manual(values = colorRampPalette(c("blue","red"))(2)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth() +
+# Lab 10, Question 13
+ci_dat |>
+  bind_rows() |>
+  head(100) |>
+  ggplot(mapping = aes(x = estimate, 
+                       y = seq_along(estimate) * 5, 
+                       colour = factor(cover))) +
+  geom_errorbarh(mapping = aes(xmin = `conf.low`, xmax = `conf.high`),
+                 height = 0.2, 
+                 linewidth = 0.5) +
+  geom_vline(aes(xintercept = 0.50),
+             linetype = "dotted") +
+  annotate("text", 
+           x = 0.85, 
+           y = Inf, 
+           label = "Population slope = 0.5",
+           vjust = 1, 
+           size = 3, 
+           color = "black") +
+  geom_point(aes(x = conf.low), shape = 16, size = 0.5) +
+  geom_point(aes(x = conf.high), shape = 16, size = 0.5) +
+  scale_x_continuous(limits = c(-1.25, 2.25),
+                     breaks = seq(-1.25,2.25,0.5)) +
+  scale_y_continuous(breaks = NULL,
+                     expand = expansion(mult = c(0.05, 0.05))) +
+  scale_color_manual(values = c("0" = "red", "1" = "cadetblue2")) +
+  labs(title = "95% Confidence Intervals of Estimated Regression Slope for \n100 Simulated Datasets",
+       subtitle = "CI's that **do not** include the population slope are highlighted in **<span style='color:#c8251d;'>red</span>**",
+       x = "Slope Coefficient Estimate",
+       y = NULL) +
   theme_bw() +
-  labs(title = "Weekly Median Price of Center-Based Childcare vs. \nFamily Childcare Across California ($)",
-       x = "Study Year",
-       y = NULL,
-       color = "Childcare Type")
+  theme(legend.position = "none",
+        plot.subtitle = element_markdown()) 
 ```
 
 **DVS-4: I can calculate numerical summaries of variables.**
@@ -1328,21 +1351,11 @@ ca_childcare |>
 ```{r}
 #| label: dvs-4-summarize
 
-#Lab 3, Question 12
-teacher_evals_clean |>
-  filter(academic_degree %in% c("dr", "prof")) |>
-  group_by(teacher_id) |>
-  summarize(
-    seniority = first(seniority),
-    sex = first(sex),
-    avg_rating = mean(resp_share, na.rm = TRUE),
-    n_courses = n_distinct(course_id),
-    .group = "drop"
-  ) |>
-  filter(
-    avg_rating == min(avg_rating)|
-    avg_rating == max(avg_rating)
-  ) 
+#Lab 3, Question 6
+summarize(teacher_evals_clean,
+          across(.cols = c(teacher_id, course_id),
+                 .fns = n_distinct,
+                 .names = "unique_{.col}"))
 ```
 
 -   Example using `across()`
@@ -1765,7 +1778,20 @@ fish |>
 ```{r}
 #| label: pe-3-map-2
 
-# NEED TO CHECK 
+# Lab 9, Question 3
+surveys |>
+  map_chr(.f = ~class(.x)) |> 
+  enframe(name = "Variable",
+          value = "Data Type") |>
+  arrange(`Data Type`) |>
+  kable(caption = "Data Types of Survey Variables") |>
+  kable_classic_2(bootstrap_options = c("striped", "hover"), 
+                full_width = F,
+                position = "center") |> 
+  row_spec(0, bold = T) |>
+  column_spec(1, width = "5cm",
+              border_right = T) |>
+  column_spec(2, width = "5cm")
 
 ```
 
