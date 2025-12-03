@@ -487,16 +487,20 @@ plot_design <- function(df, x, y, var = island){
 #Lab 5, Finding suspects at the gym
 #Revisions: mutated check_in_date with lubridate, changed left_join to inner_join
 
-get_fit_now_check_in |>
-  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
-  left_join(person, by = join_by(person_id == id)) |>
-  inner_join(drivers_license, by = join_by(license_id == id)) |>
+suspect_1 <- get_fit_now_check_in |>
   mutate(check_in_date = ymd(check_in_date)) |>
+  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
+  left_join(person, by = join_by(person_id == id, name == name)) |>
+  inner_join(drivers_license, by = join_by(license_id == id)) |>
   filter(str_detect(membership_id, "^48Z"),
          membership_status == "gold",
          str_detect(plate_number, "H42W*"),
-         check_in_date == "2018-01-09") |>
-  pull(person_id, name.x)
+         year(check_in_date) == 2018,
+         month(check_in_date) == 1,
+         day(check_in_date) == 9)
+
+suspect_1 |>
+  pull(person_id, name)
 ```
 
 **WD-5: I can use mutating joins to combine multiple dataframes.**
@@ -555,16 +559,20 @@ ca_childcare <-
 #Lab 5, Finding suspects at the gym
 #Revisions: mutated check_in_date with lubridate, changed left_join to inner_join
 
-get_fit_now_check_in |>
-  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
-  left_join(person, by = join_by(person_id == id)) |>
-  inner_join(drivers_license, by = join_by(license_id == id)) |>
+suspect_1 <- get_fit_now_check_in |>
   mutate(check_in_date = ymd(check_in_date)) |>
+  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
+  left_join(person, by = join_by(person_id == id, name == name)) |>
+  inner_join(drivers_license, by = join_by(license_id == id)) |>
   filter(str_detect(membership_id, "^48Z"),
          membership_status == "gold",
          str_detect(plate_number, "H42W*"),
-         check_in_date == "2018-01-09") |>
-  pull(person_id, name.x)
+         year(check_in_date) == 2018,
+         month(check_in_date) == 1,
+         day(check_in_date) == 9)
+
+suspect_1 |>
+  pull(person_id, name)
 ```
 
 -   `inner_join()` Example 1
@@ -590,16 +598,20 @@ ca_childcare <-
 #Lab 5, Finding suspects at the gym
 #Revisions: mutated check_in_date with lubridate, changed left_join to inner_join
 
-get_fit_now_check_in |>
-  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
-  left_join(person, by = join_by(person_id == id)) |>
-  inner_join(drivers_license, by = join_by(license_id == id)) |>
+suspect_1 <- get_fit_now_check_in |>
   mutate(check_in_date = ymd(check_in_date)) |>
+  left_join(get_fit_now_member, by = join_by(membership_id == id)) |>
+  left_join(person, by = join_by(person_id == id, name == name)) |>
+  inner_join(drivers_license, by = join_by(license_id == id)) |>
   filter(str_detect(membership_id, "^48Z"),
          membership_status == "gold",
          str_detect(plate_number, "H42W*"),
-         check_in_date == "2018-01-09") |>
-  pull(person_id, name.x)
+         year(check_in_date) == 2018,
+         month(check_in_date) == 1,
+         day(check_in_date) == 9)
+
+suspect_1 |>
+  pull(person_id, name)
 ```
 
 **WD-6: I can use filtering joins to filter rows from a dataframe.**
@@ -731,8 +743,8 @@ The following assignments satisfy the above criteria:
 -   Example 1 - Lab 3
 -   Example 2 - Challenge 3
 -   Example 3 - Lab 4
--   Example 4 - Challenge 4
--   Example 5 - Lab 5
+-   Example 4 - Lab 5
+-   Example 5 - Lab 9
 
 **R-2: I can write well documented and tidy code.**
 
@@ -1118,6 +1130,8 @@ ca_childcare |>
 #| label: dvs-2-ex-4
 
 # Challenge 2, Hot: Embedding the Legend in the Plot Title
+# Revision: added more modifcations for the text, such as adjusting the position
+
 ggplot(data = surveys,
        mapping = aes(x = species, y = weight, color = sex)) +
   geom_jitter(alpha = 0.5, color = "steelblue") +
@@ -1128,7 +1142,9 @@ ggplot(data = surveys,
         x = "Species",
         y = "Weight of Animal (g)") +
   theme(legend.position='none',
-        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.x = element_text(size = 5),
+        axis.title.x = element_text(vjust = -1),
+        axis.title.y = element_text(vjust = 1),
         plot.subtitle = element_markdown(size = 12),
         plot.title = element_text(size = 14, face = "bold")
           )
@@ -1284,7 +1300,7 @@ results |>
   scale_y_continuous(labels = label_percent(suffix = "%")) +
   theme_bw() +
   labs(title = "Proportion of the Number of Babies our Four Born in a Night Returned to their Respective Parents",
-       subtitle = "10,000 data points randomly generated to simulate 4 born in a given night"
+       subtitle = "10,000 data points randomly generated to simulate 4 born in a given night",
        y = "Proportion (%)")
           
 
@@ -1509,8 +1525,8 @@ fish |>
              columns = `Missing Values`,
              fn = function(x) {
                            case_when(
-                             x == 0 ~ "red",
-                             x > 0 ~ "blue"
+                             x == 0 ~ "#f678a7",
+                             x > 0 ~ "#62aec5"
                            )
                          }) |>
   cols_label(`Measurement Variable` = md("**Measurement Variable**"),
@@ -1524,10 +1540,12 @@ fish |>
 ```{r}
 #| label: dvs-7-ex-2
 
-# Lab 8, Question 2 (need to include a data check)
+# Lab 8, Question 2 
 # Feedback: Input checks for data frame functions are tricky, but an easy one is to check if the data frame being input is actually a data frame (not a vector or a matrix).
 
 pivot_table <- function(df, col_var, row_var){
+  stopifnot(is.data.frame(df))
+  
   df |>
     count({{col_var}}, {{row_var}}) |>
     pivot_wider(names_from = {{col_var}},
@@ -1612,7 +1630,7 @@ teacher_evals_clean <- evals |>
 #| label: pe-1-map-1
 
 
-# Lab 9, Question 8 (change colors)
+# Lab 9, Question 8 
 # Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
 
 fish |>
@@ -1659,10 +1677,12 @@ rescale_01 <- function(scaled){
 ```{r}
 #| label: pe-2-2
 
-# Lab 8, Question 2 (need to include a data check)
+# Lab 8, Question 2 
 # Feedback: Input checks for data frame functions are tricky, but an easy one is to check if the data frame being input is actually a data frame (not a vector or a matrix).
 
 pivot_table <- function(df, col_var, row_var){
+  stopifnot(is.data.frame(df))
+  
   df |>
     count({{col_var}}, {{row_var}}) |>
     pivot_wider(names_from = {{col_var}},
@@ -1716,29 +1736,30 @@ summarize(teacher_evals_clean,
 #| label: pe-3-map-1
 
 
-# Lab 9, Question 8
-# Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
+# Lab 9, Question 5
 
-fish |>
-  map_int(.f = ~ sum(is.na(.x))) |>
-  enframe(name = "Measurement Variable",
-          value = "Missing Values") |>
-  arrange(`Missing Values`) |>
-  gt() |>
-  tab_header(title = "Number of Missing Values for Fish Measurements",
-             subtitle = "Data collected from 1989 to 2006 on the Blackfoot Fish River in Montana") |>
-  data_color(method = "numeric",
-             columns = `Missing Values`,
-             fn = function(x) {
-                           case_when(
-                             x == 0 ~ "red",
-                             x > 0 ~ "blue"
-                           )
-                         }) |>
-  cols_label(`Measurement Variable` = md("**Measurement Variable**"),
-             `Missing Values` = md("**Missing Values**")) |>
-  tab_style(style = cell_text(align = "center"),
-            location = cells_column_labels(everything()))
+evals_convert |>
+  distinct(teacher_id, .keep_all = TRUE) |>
+  mutate(Seniority = case_when(seniority <= 4 ~ "Junior",
+                              seniority <= 8 ~ "Senior",
+                              seniority > 8 ~ "Very Senior"),
+         `Academic Degree` = case_when(academic_degree == "dr" ~ "Doctorate",
+                                       academic_degree == "ma" ~ "Masters",
+                                       academic_degree == "prof" ~ "Tenured Professor",
+                                       .default = "No Degree"),
+         Sex = if_else(sex == "male", "Male", "Female")
+  ) |>
+  select(`Academic Degree`, 
+         Seniority,
+         Sex) |>
+  map(.f = ~ data.frame(level = names(table(.x)),
+               n = as.numeric(table(.x)),
+               prop = as.numeric(prop.table(table(.x))))
+      )|>
+  bind_rows(.id = "variables")|>
+  kable() |>
+  kable_styling(bootstrap_options = "striped",
+              full_width = F)
 ```
 
 -   using a `map()` function with **more than one** input (e.g., `map_2()` or `pmap()`)
