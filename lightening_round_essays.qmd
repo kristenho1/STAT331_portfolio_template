@@ -14,10 +14,12 @@ editor: visual
 
 3.  What was the easiest part of the class for you? Explain why.
 
-    The easiest part of the class was
+    The easiest part of the class was working on the in class practice activities because I tend to understand the content better when I have the opportunity to talk through problems with peers and get their perspective on how they would solve the problem.
 
 4.  What part of the class surprised or interested you the most? Explain why.
 
+    The most interesting part of the class was learning how to customize graphs and tables because I liked how there were many ways to make analyzing data more intuitive and user friendly through different R packages.
+
 5.  Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
 
-    One piece of advice to a student beginning a quarter of STAT 331 is to struggle through the problem before asking Chat GPT or other AI platforms for help, because once you understand what you are struggling with, it easier to prompt AI to give you suggestions that are similar to what you are trying to do.
+    One piece of advice to a student beginning a quarter of STAT 331 is to constantly revise your thinking because all of the content in the class builds upon each other, and it becomes easier to complete problems if you understand your previous mistakes.
