@@ -449,7 +449,7 @@ ca_childcare |>
 ```{r}
 #| label: wd-4-string
 
-# Lab 8, Question 3 (need to modify a little bit)
+# Lab 8, Question 3 
 # Feedback: You should be able to remove the _ in one line of code.
 # Revision: Replaced all _ in one line and edited the labels within the titles to make the plot look cleaner and the code more tidy
 
@@ -463,8 +463,7 @@ plot_design <- function(df, x, y, var = island){
               str_replace_all("_", " ") |>
               str_to_title()
                 
-  label <- rlang::englue("Correlation Between {x_label |>
-                         str_remove} and {y_label} based on {str_to_title(as_label(enquo(var)))}")
+ label <- rlang::englue("Correlation Between {str_replace(x_label, '[^ ]*$', '')}and {str_replace(y_label, '[^ ]*$', '')}based on {str_to_title(as_label(enquo(var)))}")
   
   df |>
     ggplot(mapping = aes(x = {{x}}, 
@@ -645,10 +644,10 @@ facebook_event_checkin |>
 #| label: wd-6-anti
 
 #Lab 5 
-#Revision: added anti_join to obtain people who didn't have an interview
+#Revision: added anti_join to obtain people who didn't have an interview. Revised from midterm portfolio by taking out the join_by to ensure I'm not hard coding.
 
 person |>
-  anti_join(interview, by = join_by(id == person_id)) |>
+  anti_join(interview, by = c(id == person_id)) |>
   filter(id == 99716) |>
   pull(id, name)
 ```
@@ -707,9 +706,13 @@ ca_childcare |>
 ```{r}
 #| label: wd-7-wide
 
-# Lab 8, Question 2 (modify)
+# Lab 8, Question 2
 # Feedback: Input checks for data frame functions are tricky, but an easy one is to check if the data frame being input is actually a data frame (not a vector or a matrix).
+# Used Chat GPT to check if the input check is correct: https://chatgpt.com/share/e/6930bd65-942c-8000-9543-212731930d9b
+
 pivot_table <- function(df, col_var, row_var){
+  stopifnot(is.data.frame(df))
+  
   df |>
     count({{col_var}}, {{row_var}}) |>
     pivot_wider(names_from = {{col_var}},
@@ -806,7 +809,7 @@ ca_childcare |>
 ```{r}
 #| label: r-2-3
 
-# Lab 8, Question 3 (need to modify a little bit)
+# Lab 8, Question 3 
 # Feedback: You should be able to remove the _ in one line of code.
 # Revision: Replaced all _ in one line and edited the labels within the titles to make the plot look cleaner and the code more tidy
 
@@ -820,8 +823,7 @@ plot_design <- function(df, x, y, var = island){
               str_replace_all("_", " ") |>
               str_to_title()
                 
-  label <- rlang::englue("Correlation Between {x_label |>
-                         str_remove} and {y_label} based on {str_to_title(as_label(enquo(var)))}")
+ label <- rlang::englue("Correlation Between {str_replace(x_label, '[^ ]*$', '')}and {str_replace(y_label, '[^ ]*$', '')}based on {str_to_title(as_label(enquo(var)))}")
   
   df |>
     ggplot(mapping = aes(x = {{x}}, 
@@ -890,7 +892,7 @@ ggplot(data = ca_childcare,
        mapping = aes(x = mhi_2018, y = mc_infant)) +
   geom_point(color = "darkslategray4") +
   geom_smooth(method = "lm", color = "coral3", alpha = 0.5) +
-  scale_y_continuous(labels = function(y) paste0("$", y)) +
+  scale_y_continuous(labels = scales::dollar) +
   labs(title = "Relationship Between Median Household Income and \nWeekly Price of Infant Center-Based Childcare",
        x = "Median Household Income (2018 dollars)",
        y = "Center-Based Infant Childcare \nMedian Weekly Price ($)") 
@@ -902,6 +904,8 @@ ggplot(data = ca_childcare,
 #| label: dvs-2-num-cat
 
 # Challenge 2, Hot: Embedding the Legend in the Plot Title
+# Revision: Originally had tilted x-axis titles, but changed text size instead to ensure user does not need to tilt head to read titles 
+
 ggplot(data = surveys,
        mapping = aes(x = species, y = weight, color = sex)) +
   geom_jitter(alpha = 0.5, color = "steelblue") +
@@ -912,7 +916,7 @@ ggplot(data = surveys,
         x = "Species",
         y = "Weight of Animal (g)") +
   theme(legend.position='none',
-        axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.x = element_text(size = 5),
         plot.subtitle = element_markdown(size = 12),
         plot.title = element_text(size = 14, face = "bold")
           )
@@ -923,15 +927,21 @@ ggplot(data = surveys,
 ```{r}
 #| label: dvs-2-cat
 
-# Lab 2, Question 4
-ggplot(data = surveys,
-       mapping = aes(x = weight, y = hindfoot_length)) +
-  geom_point(alpha = 0.5) +
-  facet_wrap(~species, scales = "free_x")+
-  labs(title = "Comparison of Hindfoot Length and Weight of Different Species of Rodents",
-       x = "Weight of Animal (g)",
+# Challenge 3, Question 2
+ggplot(data = teacher_evals_compare,
+       mapping = aes(x = sen_level, fill = set_level)) +
+  geom_bar(position ="fill") +
+  scale_y_continuous(labels = label_percent(suffix = "%")) + 
+  scale_fill_manual(values = c("excellent" = "#B896d4",
+                               "standard" = "#Ba955c")) +
+  labs(title = "Evaluation of Teachers' Use of Activities",
+       x = "Years of Experience",
        y = NULL,
-       subtitle = "Hindfoot Length of Animal (mm)")
+       fill = "Evaluation Rating") +
+  theme_bw() +
+  theme(
+        legend.position = "top"
+        )
 ```
 
 -   Dates (time series plot)
@@ -1035,48 +1045,23 @@ ca_childcare |>
 ```{r}
 #| label: dvs-2-ex-2
 
+# Challenge 3, Question 2
+# Revision: changed colors to make it color blind friendly 
 
-#Lab 4, Question 7 
-#Feedback: Can you match my colors??? These are coming from a package and you will need to expand the color palette to get all 10 colors.
-#Revisions:Used colorRampPalette match the colors in the example graph, added starts_with() in select column 
-
-ca_childcare |>
-  select(study_year, census_region, starts_with("mc_")) |>
-  mutate(Infant = mc_infant,
-         Toddler = mc_toddler, 
-         Preschool = mc_preschool) |>
-  pivot_longer(cols = c(Infant, Toddler, Preschool),
-               names_to = "childcare_center",
-               values_to = "median_price") |>
-  mutate(childcare_center = fct(childcare_center, 
-                                levels = c("Infant",
-                                           "Toddler",
-                                           "Preschool")))|>
-  ggplot(mapping = aes(x = study_year, 
-                    y = median_price,
-                    color = fct_reorder2(.f = census_region,
-                                        .x = study_year,
-                                        .y = median_price,
-                                        .fun = last2,
-                                        .desc = TRUE))) +
-  scale_x_continuous(limits = c(2008, 2018),
-                     breaks = seq(2008,2018,2)) +
-  scale_y_continuous(limits = c(0,500),
-                     breaks = seq(0,500, 100)) +
-  scale_color_manual(values = colorRampPalette(brewer.pal(7, "Accent"))(10)) +
-  geom_point() +
-  geom_smooth(method = "loess",
-              linewidth = 0.5,
-              fill = "grey",
-              alpha = 0.5) +
-  facet_wrap(~childcare_center, scales = "free_x") +
-  labs(title = "Weekly Median Price for Center-Based Childcare ($)",
-       x = "Study Year",
+ggplot(data = teacher_evals_compare,
+       mapping = aes(x = sen_level, fill = set_level)) +
+  geom_bar(position ="fill") +
+  scale_y_continuous(labels = label_percent(suffix = "%")) + 
+  scale_fill_manual(values = c("excellent" = "#648fff",
+                               "standard" = "#fe6100")) +
+  labs(title = "Evaluation of Teachers' Use of Activities",
+       x = "Years of Experience",
        y = NULL,
-       color = "California Region") +
+       fill = "Evaluation Rating") +
   theme_bw() +
-  theme(aspect.ratio = 1,
-        axis.text.x = element_text(size = 6))
+  theme(
+        legend.position = "top"
+        )
 ```
 
 -   I can modify my plot titles to clearly communicate the data context
@@ -1270,7 +1255,7 @@ ggplot(data = ca_childcare,
        mapping = aes(x = mhi_2018, y = mc_infant)) +
   geom_point(color = "darkslategray4") +
   geom_smooth(method = "lm", color = "coral3", alpha = 0.5) +
-  scale_y_continuous(labels = function(y) paste0("$", y)) +
+  scale_y_continuous(labels = scales::dollar) +
   labs(title = "Relationship Between Median Household Income and \nWeekly Price of Infant Center-Based Childcare",
        x = "Median Household Income (2018 dollars)",
        y = "Center-Based Infant Childcare \nMedian Weekly Price ($)") 
@@ -1283,7 +1268,7 @@ ggplot(data = ca_childcare,
 #| label: dvs-3-2
 
 
-# Lab 10, Question 3 (modify)
+# Lab 10, Question 3 
 # Feedback: How many total babies could have been assigned? 4? 5? 6? That information should be included in you plot title! How many simultations were run? That information should be included in your title!
 
 results |>
@@ -1298,7 +1283,8 @@ results |>
             vjust = -0.5, size = 3) +
   scale_y_continuous(labels = label_percent(suffix = "%")) +
   theme_bw() +
-  labs(title = "Proportion of the Number of Babies Returned to their Respective Parents",
+  labs(title = "Proportion of the Number of Babies our Four Born in a Night Returned to their Respective Parents",
+       subtitle = "10,000 data points randomly generated to simulate 4 born in a given night"
        y = "Proportion (%)")
           
 
@@ -1508,7 +1494,7 @@ ca_childcare |>
 ```{r}
 #| label: dvs-7-ex-1
 
-# Lab 9, Question 8 (change colors)
+# Lab 9, Question 8 
 # Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
 
 fish |>
@@ -1524,7 +1510,7 @@ fish |>
              fn = function(x) {
                            case_when(
                              x == 0 ~ "red",
-                             x > 0 ~ "green"
+                             x > 0 ~ "blue"
                            )
                          }) |>
   cols_label(`Measurement Variable` = md("**Measurement Variable**"),
@@ -1642,7 +1628,7 @@ fish |>
              fn = function(x) {
                            case_when(
                              x == 0 ~ "red",
-                             x > 0 ~ "green"
+                             x > 0 ~ "blue"
                            )
                          }) |>
   cols_label(`Measurement Variable` = md("**Measurement Variable**"),
@@ -1692,10 +1678,12 @@ pivot_table <- function(df, col_var, row_var){
 ```{r}
 #| label: pe-2-3
 
-# Challenge 7, Question 2 (need to modify)
+# Challenge 7, Question 2 
 # Feedback: What types of inputs does your function expect?
 
 clean_data <- function(x, min, max){
+  stopifnot(is.numeric(x))
+  
   if(length(x) <= 1){
     return(NA)
   }
@@ -1714,31 +1702,11 @@ clean_data <- function(x, min, max){
 ```{r}
 #| label: pe-3-across
 
-# Lab 3, Question 5
-teacher_evals_clean <- evals |>
-  rename(sex = gender) |>
-  mutate(teacher_id = as.character(teacher_id),
-         question_no = as.character(question_no),
-         across(
-           .cols = c(no_participants, 
-                     resp_share, 
-                     SET_score_avg, 
-                     percent_failed_cur, 
-                     seniority),
-           .fns = ~ as.numeric(.x)
-           )
-         )|>
-  filter(no_participants > 10) |>
-  select(course_id,
-         teacher_id,
-         question_no,
-         no_participants,
-         resp_share,
-         SET_score_avg,
-         percent_failed_cur,
-         academic_degree,
-         seniority,
-         sex)
+# Lab 3, Question 6
+summarize(teacher_evals_clean,
+          across(.cols = c(teacher_id, course_id),
+                 .fns = n_distinct,
+                 .names = "unique_{.col}"))
 
 ```
 
@@ -1748,7 +1716,7 @@ teacher_evals_clean <- evals |>
 #| label: pe-3-map-1
 
 
-# Lab 9, Question 8 (change colors)
+# Lab 9, Question 8
 # Feedback: Red and green are hard for some people’s eyes to differentiate! Can you modify your colors to be more acccesible for everyone’s eyes?
 
 fish |>
@@ -1764,7 +1732,7 @@ fish |>
              fn = function(x) {
                            case_when(
                              x == 0 ~ "red",
-                             x > 0 ~ "green"
+                             x > 0 ~ "blue"
                            )
                          }) |>
   cols_label(`Measurement Variable` = md("**Measurement Variable**"),
