@@ -8,6 +8,8 @@ editor: visual
 
 1.  Finish the sentence with another student’s name: "If \[Name of Student\] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
 
+    If Connie Xian doesn't earn an A, then nobody should, because she had multiple exemplary work that shows her consistently going above and beyond, and asks questions in class that shows her thinking outside of the box.
+
 2.  What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
 
     The most difficult part of the class was creating functions because it was difficult to ensure it applies to specific inputs, especially for graphs.
