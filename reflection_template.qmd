@@ -12,7 +12,7 @@ editor_options:
   chunk_output_type: inline
 ---
 
-[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [A-.]{.underline}
+[**My Grade:**]{.underline} I believe my grade equivalent to course work evidenced below to be an [A.]{.underline}
 
 [**Learning Objective Evidence:**]{.underline} In the code chunks below, provide code from Lab or Challenge assignments where you believe you have demonstrated proficiency with the specified learning target. Be sure to specify **where** the code came from (e.g., Lab 4 Question 2).
 
