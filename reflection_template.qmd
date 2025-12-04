@@ -655,12 +655,12 @@ facebook_event_checkin |>
 ```{r}
 #| label: wd-6-anti
 
-#Lab 5 
-#Revision: added anti_join to obtain people who didn't have an interview. Revised from midterm portfolio by taking out the join_by to ensure I'm not hard coding.
+#Lab 5: Analyzing further information from suspect 2
+#Revision: added anti_join to obtain people who didn't have an interview. Revised from midterm portfolio by replacing the filter with an inner_join to use joins instead of hard coding.
 
 person |>
-  anti_join(interview, by = c(id == person_id)) |>
-  filter(id == 99716) |>
+  anti_join(interview, by = join_by(id == person_id)) |>
+  inner_join(final_suspect, by = join_by(id == person_id, name == name)) |>
   pull(id, name)
 ```
 
@@ -1353,11 +1353,21 @@ ci_dat |>
 ```{r}
 #| label: dvs-4-summarize
 
-#Lab 3, Question 6
-summarize(teacher_evals_clean,
-          across(.cols = c(teacher_id, course_id),
-                 .fns = n_distinct,
-                 .names = "unique_{.col}"))
+#Lab 3, Question 12
+teacher_evals_clean |>
+  filter(academic_degree %in% c("dr", "prof")) |>
+  group_by(teacher_id) |>
+  summarize(
+    seniority = first(seniority),
+    sex = first(sex),
+    avg_rating = mean(resp_share, na.rm = TRUE),
+    n_courses = n_distinct(course_id),
+    .group = "drop"
+  ) |>
+  filter(
+    avg_rating == min(avg_rating)|
+    avg_rating == max(avg_rating)
+  ) 
 ```
 
 -   Example using `across()`
@@ -1722,11 +1732,13 @@ clean_data <- function(x, min, max){
 ```{r}
 #| label: pe-3-across
 
-# Lab 3, Question 6
-summarize(teacher_evals_clean,
-          across(.cols = c(teacher_id, course_id),
-                 .fns = n_distinct,
-                 .names = "unique_{.col}"))
+# Lab 7, Question 1
+fish_missing <- fish |>
+  summarize(
+    across(.cols = everything(),
+         .fns = ~sum(is.na(.x))
+           )
+    ) 
 
 ```
 
